@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Media;
 
 //
 //  Application Name: Drunk PC
@@ -24,6 +25,9 @@ namespace DrunkPC
         //global random generator
         public static Random _random = new Random();
 
+        public static int _startupDelaySeconds = 10;
+        public static int _totalDurationSeconds = 10;
+
         /// <summary>
         /// entry point for application
         /// </summary>
@@ -31,11 +35,26 @@ namespace DrunkPC
         {
             Console.WriteLine("DrunkPC Prank application");
 
+            if (args.Length >= 2)
+            {
+                _startupDelaySeconds = Convert.ToInt32(args[0]);
+                _totalDurationSeconds = Convert.ToInt32(args[1]);
+            }
+
             //creates all thread that manipulate all of the inputs and outputs to the system
             Thread drunkMouseThread = new Thread(new ThreadStart(DrunkMouseThread));
             Thread drunkKeyboardThread = new Thread(new ThreadStart(DrunkKeyboardThread));
             Thread drunkSoundThread = new Thread(new ThreadStart(DrunkSoundThread));
             Thread drunkPopupThread = new Thread(new ThreadStart(DrunkPopupThread));
+
+
+            DateTime future = DateTime.Now.AddSeconds(_startupDelaySeconds);
+
+            while (future > DateTime.Now)
+            {
+                Thread.Sleep(1000);
+            }
+
 
             //start all of the threads
             drunkMouseThread.Start();
@@ -43,8 +62,12 @@ namespace DrunkPC
             drunkSoundThread.Start();
             drunkPopupThread.Start();
 
-            //Wait for user input
-            Console.Read();
+            future = DateTime.Now.AddSeconds(_totalDurationSeconds);
+
+            while(future > DateTime.Now)
+            {
+                Thread.Sleep(1000);
+            }
 
             //Aborts all threads
             drunkMouseThread.Abort();
@@ -61,7 +84,6 @@ namespace DrunkPC
         /// </summary>
         public static void DrunkMouseThread()
         {
-            Console.WriteLine("DrunkMouseThread started.");
             int moveX = 0;
             int moveY = 0;
 
@@ -74,7 +96,7 @@ namespace DrunkPC
                 //change random cursor position
                 Cursor.Position = new System.Drawing.Point(Cursor.Position.X + moveX, Cursor.Position.Y + moveY);
 
-                Thread.Sleep(100);
+                Thread.Sleep(_random.Next(100));
             }
         }
 
@@ -100,7 +122,7 @@ namespace DrunkPC
                 //enters random key
                 SendKeys.SendWait(key.ToString());
 
-                Thread.Sleep(500);
+                Thread.Sleep(_random.Next(500));
             }
         }
         
@@ -109,10 +131,41 @@ namespace DrunkPC
         /// </summary>
         public static void DrunkSoundThread()
         {
-            Console.WriteLine("DrunkSoundThread started.");
             while (true)
             {
-                //Console.WriteLine("DrunkSoundThread looped.");
+                //10% of the time play a sound
+                if(_random.Next(100) > 90)
+                {
+                    //gets a randome number to play a random system sound
+                    switch(_random.Next(5))
+                    {
+                        case 0:
+                            {
+                                SystemSounds.Asterisk.Play();
+                                break;
+                            }
+                        case 1:
+                            {
+                                SystemSounds.Beep.Play();
+                                break;
+                            }
+                        case 2:
+                            {
+                                SystemSounds.Exclamation.Play();
+                                break;
+                            }
+                        case 3:
+                            {
+                                SystemSounds.Hand.Play();
+                                break;
+                            }
+                        case 4:
+                            {
+                                SystemSounds.Question.Play();
+                                break;
+                            }
+                    }
+                }
                 Thread.Sleep(500);
             }
         }
@@ -122,11 +175,19 @@ namespace DrunkPC
         /// </summary>
         public static void DrunkPopupThread()
         {
-            Console.WriteLine("DrunkPopupThread started.");
+
             while (true)
             {
-                //Console.WriteLine("DrunkPopupThread looped.");
-                Thread.Sleep(500);
+                //10% of the time display a messagebox
+                if (_random.Next(100) > 90)
+                {
+                    MessageBox.Show("Internet explorer has stopped working",
+                    "Internet Explorer",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                }
+                    
+                Thread.Sleep(10000);
             }
         }
         #endregion //for thread functions region
